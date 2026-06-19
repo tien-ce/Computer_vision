@@ -1,0 +1,29 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+cpv_env/
+.venv/
+env/
+venv/
+ENV/
+
+# Configuration and Secrets
+.env
+
+# Project Specific Data & Inputs
+Input/
+
+# Heavy Weights and Machine Learning Models
+Models/
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
