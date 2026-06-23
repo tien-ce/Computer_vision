@@ -1,11 +1,12 @@
 import os
 import cv2 
 import numpy as np
-from reader import StreamReader
+from my_reader import StreamReader
 from dotenv import load_dotenv
 from transform import LetterboxTransformer
 from inference import ModelInference
-from log import LogLevel, log
+from my_logger import LogLevel
+import my_logger as logger
 from uniform import detector
 def main():
     # 1. Initialize the custom YOLO Pose Estimation model wrapper
@@ -111,7 +112,7 @@ def main():
                 actual_torso_pixels = cv2.countNonZero(resized_geometry_mask)
                 # Call the prediction method directly
                 best_match_name, color_percentage = detector.predict(hsv_shirt, actual_torso_pixels)
-                log(LogLevel.DEBUG, f"Best mach name: {best_match_name}, color percentage {color_percentage}")
+                logger.log_debug( f"Best mach name: {best_match_name}, color percentage {color_percentage}")
                 # ---- STEP 5: VISUAL RECORDING ON GLOBAL CANVAS ----
                 # Switch color status representation dynamically (Green = Pass, Red = Infraction)
                 if color_percentage >= UNIFORM_THRESHOLD:
@@ -120,7 +121,7 @@ def main():
                 else:
                     ui_color = (0, 0, 255)  # Red for non-uniform
                     status_text = f"P{person_idx}: Not Uniform"
-                log(LogLevel.INFO, f"Status text: {status_text}")
+                logger.log_info( f"Status text: {status_text}")
                 # Apply visual markings onto the global frame canvas
                 cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), ui_color, 2)
                 cv2.putText(frame, status_text, (x_min, max(y_min - 10, 20)), 

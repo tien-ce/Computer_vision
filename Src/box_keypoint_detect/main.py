@@ -1,6 +1,6 @@
 import os
 import cv2 
-from reader import StreamReader
+from my_reader import Reader
 from dotenv import load_dotenv
 from transform import Preprocessor, LetterboxTransformer
 from inference import ModelInference

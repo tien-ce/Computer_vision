@@ -1,7 +1,7 @@
 import os
 import cv2 
 import numpy as np
-from reader import StreamReader
+from my_reader import StreamReader
 from dotenv import load_dotenv
 from transform import Preprocessor
 from inference import ModelInference

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import List, Tuple
 import cv2
 import numpy as np
-from log import LogLevel, log
+from my_logger import LogLevel, log
 
 # Type alias for HSV bounds: (Hue, Saturation, Value)
 HSVColor = Tuple[int, int, int]
