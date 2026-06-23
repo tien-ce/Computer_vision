@@ -25,7 +25,7 @@ def main():
     global hsv_img
     
     # 1. Path to your sample uniform image
-    image_path = "D:\Van_Tien\Project\Camera\Input\human_detections\Screenshot 2026-06-19 135201.png"
+    image_path = "D:\Van_Tien\Project\Camera\Input\human_detections\Screenshot 2026-06-22 161118.png"
     
     # Load the image in standard BGR format
     bgr_img = cv2.imread(image_path)

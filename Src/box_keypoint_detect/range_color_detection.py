@@ -7,7 +7,7 @@ def nothing(x):
 
 def main():
     # 1. Path to your fixed sample image
-    image_path = "D:\Van_Tien\Project\Camera\Input\human_detections\Screenshot 2026-06-19 142552.png"
+    image_path = "D:\Van_Tien\Project\Camera\Input\human_detections\Screenshot 2026-06-22 153457.png"
     
     # Load the image in standard BGR format
     bgr_img = cv2.imread(image_path)

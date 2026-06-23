@@ -2,7 +2,7 @@ import os
 import cv2 
 from reader import StreamReader
 from dotenv import load_dotenv
-from Src.transform import Preprocessor, LetterboxTransformer
+from transform import Preprocessor, LetterboxTransformer
 from inference import ModelInference
 
 # Load environment variables from a .env file if it exists
@@ -44,8 +44,8 @@ def main():
             # 2. Preprocess frame
             image = preprocessor.process(frame)
             # 3. Run inference on the preprocessed frame and get the results
-            results = model.predict(image, verbose = False)
-            result = results[0]
+            result = model.predict(image, verbose = False)
+            
             boxes = result.boxes
             for i, box in enumerate(boxes):
                 # Check if the detected class is 'person' (class_id 0 in COCO dataset)
@@ -54,7 +54,7 @@ def main():
                     # Extract bounding box coordinates
                     x1, y1, x2, y2 = map(int, box.xyxy[0].tolist())
                     # Prevent out-of-bounds array slicing
-                    x1, y1 = max(0, y1), max(0, x1)                    
+                    x1, y1 = max(0, x1), max(0, y1)                    
                     
                     # Draw a bounding box around the person on the main frame stream
                     confidence = float(box.conf[0])

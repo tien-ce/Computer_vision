@@ -12,7 +12,7 @@ class ModelInference:
         Filters specifically for human targets (class 0).
         """
         # verbose=False keeps the console clean during real-time loops
-        results = self.model.predict(source=frame, classes=[0], verbose = verbose)
+        results = self.model.predict(source=frame, verbose = verbose)
         return results[0]  # Return the results for the single processed frame
 
     def stop(self):

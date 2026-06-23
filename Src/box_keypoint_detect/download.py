@@ -3,12 +3,12 @@ import cv2
 import numpy as np
 from reader import StreamReader
 from dotenv import load_dotenv
-from Src.transform import Preprocessor
+from transform import Preprocessor
 from inference import ModelInference
 
-original_image_path = "../Input/original_images/train/images/"
+original_image_path = "../../Input/original_images/train/images/"
 orignial_image_files = os.listdir(original_image_path)
-human_detection_path = "../Input/human_detections"
+human_detection_path = "../../Input/human_detections"
 def save_human_image(frame, results, target_size=(256, 256)):
     """
     Saves and displays detected human bounding boxes resized to a uniform shape.
