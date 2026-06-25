@@ -49,12 +49,12 @@ class FrameNode:
             self.y1 = 0
             self.y2, self.x2 = image.shape[:2]
         elif parent is not None:
-            # Nếu là child node (cắt từ parent)
+            
             self.x1 = x1
             self.y1 = y1
             self.x2 = x2
             self.y2 = y2
-            # Crop ảnh từ ảnh của parent node
+            
             self.image = parent.image[y1:y2, x1:x2]
 
     def get_global_coordinates(self):
@@ -63,16 +63,16 @@ class FrameNode:
         """
         # Base Case: Root node represents the full original image frame (0 offset dependency)
         if self.parent is None:
-            return self.local_x1, self.local_y1, self.local_x2, self.local_y2
+            return self.x1, self.y1, self.x2, self.y2
         
         # Recursive Step: Fetch the absolute global starting origin of the parent node
         parent_x1, parent_y1, _, _ = self.parent.get_global_coordinates()
         
         # Transform current local coordinates into absolute coordinates using parent absolute origin
-        global_x1 = parent_x1 + self.local_x1
-        global_y1 = parent_y1 + self.local_y1
-        global_x2 = parent_x1 + self.local_x2
-        global_y2 = parent_y1 + self.local_y2
+        global_x1 = parent_x1 + self.x1
+        global_y1 = parent_y1 + self.y1
+        global_x2 = parent_x1 + self.x2
+        global_y2 = parent_y1 + self.y2
         
         return global_x1, global_y1, global_x2, global_y2
 

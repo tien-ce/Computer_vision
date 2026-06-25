@@ -28,7 +28,7 @@ TARGET_TOP_CLASSES = {1,2,4,5,8,11}
 # SEGMENTER MODULE CLASS
 # ==============================================================================
 class ShirtSegmenter:
-    def __init__(self, log_level: LogLevel = LogLevel.INFO, draw: bool = False):
+    def __init__(self, log_level: LogLevel = LogLevel.INFO,confidence: float = 0.5, draw: bool = False):
         """
         Initializes the ShirtSegmenter module. The model path is resolved automatically
         internally and does not require external parameters.
@@ -38,6 +38,7 @@ class ShirtSegmenter:
         """
         # Pass the automatically resolved absolute path string to your inference engine
         self.shirt_seg_model = ModelInference(str(INTERNAL_MODEL_PATH))
+        self.confidence = confidence
         self.draw = draw
         
         # The module instantiates its own isolated logger and sets its own level
@@ -46,7 +47,7 @@ class ShirtSegmenter:
         
         self.logger.log_info(f"Model loaded successfully from {INTERNAL_MODEL_PATH} (Log Level: {log_level.name})")
 
-    def segment_shirt(self, frame) -> list[SegmentedObject]:
+    def segment_shirt(self, frame) -> SegmentedObject:
         """
         Processes a single cropped person frame matrix, runs instance segmentation, and extracts contours.
         
@@ -55,7 +56,7 @@ class ShirtSegmenter:
         """
         if frame is None:
             self.logger.log_error("Received an empty or invalid cropped frame matrix")
-            return []
+            return None
 
         # Execute model inference on secondary isolated GPU to prevent resource collisions
         result = self.shirt_seg_model.predict(frame=frame,verbose=False)
@@ -63,7 +64,7 @@ class ShirtSegmenter:
         # Structural boundary validation: Ensure that the model successfully isolated at least one mask object
         if result.masks is None:
             self.logger.log_debug("No segments or masks detected in the current frame")
-            return []
+            return None
 
         # ---------------- Original internal debug section ----------------
         raw_masks_tensor = result.masks.data
@@ -83,10 +84,13 @@ class ShirtSegmenter:
                 continue
 
             class_id = int(box.cls[0])
-            confidence = float(box.conf[0])
-            self.logger.log_debug(f"class_id: {class_id}, confidence: {confidence}")
             # Filter specifically for targeting garments / shirts (Adjust class_id map matching your data.yaml)
             if class_id in TARGET_TOP_CLASSES:
+                confidence = float(box.conf[0])
+                self.logger.log_debug(f"class_id: {class_id}, confidence: {confidence}")
+                if confidence < self.confidence:
+                    self.logger.log_debug("Confidence isn't enough")
+                    continue
                 # OpenCV primitives require signed 32-bit integer arrays
                 # points_float32:   [[120.4, 240.1], [130.8, 250.5], ...]
                 #                        ↓               ↓
@@ -113,15 +117,16 @@ class ShirtSegmenter:
                     
                     # Execute localized linear pixel mixing: 40% opaque overlay blending
                     cv2.addWeighted(overlay, 0.4, frame, 0.6, 0, dst=frame)
-
-        return segmented_objects
+        if len(segmented_objects) == 0:
+            return None
+        return segmented_objects[0] # Belive in our model only detect one object
     
     def mask_shirt (self,frame):
-        segments = self.segment_shirt(frame)
+        shirt_segment = self.segment_shirt(frame)
         # Might be detect more than 1 segemtn
-        if segments is None or len(segments) == 0:
+        if shirt_segment is None:
+            self.logger.log_debug("mask_shirt received None from segment_shirt (No garments detected)")
             return None
-        shirt_segment = segments[0] # Belive in our model
         points = shirt_segment.points
         # 1. Initialize a strictly 8-bit unsigned integer single-channel blank mask (uint8)
         mask = np.zeros(frame.shape[:2], dtype=np.uint8)

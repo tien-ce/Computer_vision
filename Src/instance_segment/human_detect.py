@@ -31,7 +31,7 @@ class BoundingBox:
 # DETECTOR MODULE CLASS
 # ==============================================================================
 class HumanDetector:
-    def __init__(self, log_level: LogLevel = LogLevel.INFO, draw: bool = False):
+    def __init__(self, log_level: LogLevel = LogLevel.INFO, confidence = 0.5, draw: bool = False):
         """
         Initializes the HumanDetector module. The model path is resolved automatically
         internally and does not require external parameters.
@@ -41,6 +41,7 @@ class HumanDetector:
         """
         # Pass the automatically resolved absolute path string to your inference engine
         self.human_box_model = ModelInference(str(INTERNAL_MODEL_PATH))
+        self.confidence = confidence
         self.draw = draw
         
         # The module instantiates its own isolated logger and sets its own level
@@ -70,9 +71,13 @@ class HumanDetector:
 
         for i, box in enumerate(boxes):
             class_id = int(box.cls[0])
-            confidence = boxes.conf[i]
-            self.logger.log_debug(f"Class id: {class_id}, confidence: {confidence}")
+            
             if class_id == 0:
+                confidence = float(box.conf[0])
+                self.logger.log_debug(f"Class id: {class_id}, confidence: {confidence}")
+                if confidence < self.confidence:
+                    self.logger.log_debug("Confidence isn't enough")
+                    continue
                 # ---------------- Original internal debug section ----------------
                 raw_tensor_2d = box.xyxy
                 # Type: <class 'torch.Tensor'>, Example value: tensor([[120.4500, 240.1800, 310.8200, 680.5100]], device='cuda:0')
@@ -99,13 +104,21 @@ class HumanDetector:
                 # Type: <class 'int'>, Example value: x1: 120, y1: 240, x2: 310, y2: 680
                 self.logger.log_debug(f"Coordinates - x1: {type(x1)}={x1}, y1: {type(y1)}={y1}, x2: {type(x2)}={x2}, y2: {type(y2)}={y2}")
                 # ---------------------------------------------------------------------
-                
+
                 bbox = BoundingBox(x1=x1, y1=y1, x2=x2, y2=y2, class_id=class_id, confidence=confidence)
                 detected_people.append(bbox)
 
                 # Context-aware drawing inside the module
                 if self.draw is True:
-                    cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                    cv2.putText(frame, "Person", (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-
+                # Crop the isolated region from the original frame safely
+                # Get frame dimensions to prevent out-of-bounds slicing
+                    height, width = frame.shape[:2]
+                    crop_x1 = max(0, x1)
+                    crop_y1 = max(0, y1)
+                    crop_x2 = min(width, x2)
+                    crop_y2 = min(height, y2)
+                    cropped_person_frame = frame[crop_y1:crop_y2, crop_x1:crop_x2]
+                    resized_frame = cv2.resize(cropped_person_frame, (300, 400))
+                    # cv2.putText(cropped_person_frame, f"Confidence: {confidence}", (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                    cv2.imshow(f"Cropped Person {i}", resized_frame)
         return detected_people
