@@ -4,7 +4,7 @@ import cv2
 import torch
 # Import standard components from your centralized logger module
 from my_logger import Logger, LogLevel
-from inference import ModelInference
+from my_inference import ModelInference
 
 # Resolve the absolute directory of this module file at runtime
 MODULE_DIR = Path(__file__).resolve().parent

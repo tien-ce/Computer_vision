@@ -5,6 +5,17 @@ __pycache__/
 
 # Environments
 cpv_env/
+# 1. Allow Git to enter the parent folders (MUST have trailing slashes)
+!cpv_env/
+!cpv_env/Lib/
+!cpv_env/Lib/site-packages/
+
+# 2. Ignore everything inside the target folder
+cpv_env/Lib/site-packages/*
+
+# 3. Explicitly allow your specific files
+!cpv_env/Lib/site-packages/my_*.py
+
 .venv/
 env/
 venv/
@@ -15,7 +26,7 @@ ENV/
 
 # Project Specific Data & Inputs
 Input/
-
+Output/
 # Heavy Weights and Machine Learning Models
 Models/
 
@@ -27,3 +38,4 @@ Models/
 *.njsproj
 *.sln
 *.swp
+*~

@@ -6,7 +6,7 @@ import numpy as np
 import torch
 # Import standard components from your centralized logger module
 from my_logger import Logger, LogLevel
-from inference import ModelInference
+from my_inference import ModelInference
 
 # Resolve the absolute directory of this module file at runtime
 MODULE_DIR = Path(__file__).resolve().parent
@@ -22,7 +22,7 @@ class SegmentedObject:
     points: np.ndarray  # Format: Shape (N, 1, 2) dtype=np.int32 for OpenCV compatibility
     class_id: int
     confidence: float
-    
+    masked_frame: np.array    
 TARGET_TOP_CLASSES = {1,2,4,5,8,11}
 # ==============================================================================
 # SEGMENTER MODULE CLASS
@@ -47,7 +47,7 @@ class ShirtSegmenter:
         
         self.logger.log_info(f"Model loaded successfully from {INTERNAL_MODEL_PATH} (Log Level: {log_level.name})")
 
-    def segment_shirt(self, frame) -> SegmentedObject:
+    def _segment_shirt(self, frame) -> SegmentedObject:
         """
         Processes a single cropped person frame matrix, runs instance segmentation, and extracts contours.
         
@@ -103,7 +103,7 @@ class ShirtSegmenter:
                 points = points.reshape((-1, 1, 2))
                 self.logger.log_debug(f"Object {i} contour structure - Type: {type(points)} Shape: {points.shape}")
 
-                seg_obj = SegmentedObject(points=points, class_id=class_id, confidence=confidence)
+                seg_obj = SegmentedObject(points=points, class_id=class_id, confidence=confidence, masked_frame = None)
                 segmented_objects.append(seg_obj)
 
                 # Context-aware drawing and Alpha blending inside the module
@@ -117,23 +117,21 @@ class ShirtSegmenter:
                     
                     # Execute localized linear pixel mixing: 40% opaque overlay blending
                     cv2.addWeighted(overlay, 0.4, frame, 0.6, 0, dst=frame)
-        if len(segmented_objects) == 0:
-            return None
-        return segmented_objects[0] # Belive in our model only detect one object
+        return segmented_objects# Belive in our model only detect one object
     
     def mask_shirt (self,frame):
-        shirt_segment = self.segment_shirt(frame)
+        shirt_segments = self._segment_shirt(frame)
         # Might be detect more than 1 segemtn
-        if shirt_segment is None:
+        if len(shirt_segments) == 0: 
             self.logger.log_debug("mask_shirt received None from segment_shirt (No garments detected)")
-            return None
-        points = shirt_segment.points
-        # 1. Initialize a strictly 8-bit unsigned integer single-channel blank mask (uint8)
-        mask = np.zeros(frame.shape[:2], dtype=np.uint8)
-        # 2. Render and solid-fill the inner polygon coordinates on the mask with pure white (255)
-        cv2.fillPoly(mask, [points], 255)
-        # 3. Apply bitwise conjunction. Pixels corresponding to 255 on the mask are retained in color.
-        isolated_shirt = cv2.bitwise_and(frame, frame, mask=mask)
-        return isolated_shirt
-
+            return shirt_segments
+        for shirt_segment in shirt_segments:
+            points = shirt_segment.points
+            # 1. Initialize a strictly 8-bit unsigned integer single-channel blank mask (uint8)
+            mask = np.zeros(frame.shape[:2], dtype=np.uint8)
+            # 2. Render and solid-fill the inner polygon coordinates on the mask with pure white (255)
+            cv2.fillPoly(mask, [points], 255)
+            # 3. Apply bitwise conjunction. Pixels corresponding to 255 on the mask are retained in color.
+            shirt_segment.masked_frame = cv2.bitwise_and(frame, frame, mask=mask)
+        return shirt_segments 
 
