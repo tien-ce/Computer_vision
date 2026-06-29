@@ -11,24 +11,30 @@ class Logger:
     def __init__(self, name: str, level: LogLevel = LogLevel.DEBUG):
         self.name = name
         self.current_log_level = level
+        if level.value > LogLevel.DEBUG.value:
+            self.log_debug = lambda *args, **kwargs: None
+        else:
+            self.log_debug = self._real_log_debug
+        if level.value > LogLevel.INFO.value:
+            self.log_info= lambda *args, **kwargs: None
+        else:
+            self.log_info= self._real_log_info
+
 
     def _log(self, level: LogLevel, message: str):
         if not isinstance(level, LogLevel):
             raise TypeError("Parameter 'level' must be an instance of LogLevel")
-        
-        if level.value >= self.current_log_level.value:
-            # Removed the extra space/colon formatting error from the original print
-            print(f"[{level.name}][{self.name}] {message}")
+        print(f"[{level.name}][{self.name}] {message}")
         
     def setLevel(self, level: LogLevel):
         if not isinstance(level, LogLevel):
             raise TypeError("Parameter 'level' must be an instance of LogLevel")
         self.current_log_level = level
 
-    def log_debug(self, message: str):
+    def _real_log_debug(self, message: str):
         self._log(LogLevel.DEBUG, message=message)
 
-    def log_info(self, message: str):
+    def _real_log_info(self, message: str):
         self._log(LogLevel.INFO, message=message)
 
     def log_warning(self, message: str):
