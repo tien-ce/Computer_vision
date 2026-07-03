@@ -25,11 +25,6 @@ class Logger:
         if not isinstance(level, LogLevel):
             raise TypeError("Parameter 'level' must be an instance of LogLevel")
         print(f"[{level.name}][{self.name}] {message}")
-        
-    def setLevel(self, level: LogLevel):
-        if not isinstance(level, LogLevel):
-            raise TypeError("Parameter 'level' must be an instance of LogLevel")
-        self.current_log_level = level
 
     def _real_log_debug(self, message: str):
         self._log(LogLevel.DEBUG, message=message)

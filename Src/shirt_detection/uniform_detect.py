@@ -1,8 +1,8 @@
 from dataclasses import dataclass
-from dataclasses import dataclass
 from pathlib import Path
 import cv2
 import torch
+import numpy as np
 # Import standard components from your centralized logger module
 from my_logger import Logger, LogLevel
 from my_inference import ModelInference
@@ -12,7 +12,7 @@ MODULE_DIR = Path(__file__).resolve().parent
 
 # Hardcoded relative path layout from THIS module's location
 INTERNAL_MODEL_PATH = (MODULE_DIR / ".." / ".." / "Models" / "unifromDetection_yolo11s_best.pt").resolve()
-
+LABLES = ["No uniform", "Uniform", "Uniform in jacket"]
 # ==============================================================================
 # DATA STRUCTURE
 # ==============================================================================
@@ -25,9 +25,12 @@ class BoundingBox:
     class_id: int
     confidence: float
     @property
-    def xyxy(self) -> tuple[int, int, int, int]:
-        """Returns the coordinates boundary as a swift tuple."""
-        return self.x1, self.y1, self.x2, self.y2
+    def xyxy(self) -> np.array:
+        """Returns the coordinates boundary as a numpy array."""
+        return np.array([self.x1, self.y1, self.x2, self.y2], dtype=np.int32)
+    @property
+    def label(self) -> str:
+        return LABLES[self.class_id]
 # ==============================================================================
 # DETECTOR MODULE CLASS
 # ==============================================================================
@@ -47,8 +50,7 @@ class UniformDetector:
         self.draw = draw
         
         # The module instantiates its own isolated logger and sets its own level
-        self.logger = Logger(name="Uniform detection")
-        self.logger.setLevel(log_level)
+        self.logger = Logger(name="Uniform detection", log_level)
         
         self.logger.log_info(f"Model loaded successfully from {INTERNAL_MODEL_PATH} (Log Level: {log_level.name})")
 
