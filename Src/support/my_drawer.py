@@ -2,10 +2,7 @@ import os
 import cv2
 import numpy as np
 from dataclasses import dataclass
-from uniform_detect import UniformDetector
 from my_logger      import LogLevel,Logger
-from my_reader      import Reader
-from my_frame2video import Frame2Video
 
 """
 Module responsible for drawing directly into frame based on the requirement
