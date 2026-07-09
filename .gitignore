@@ -27,8 +27,11 @@ ENV/
 # Project Specific Data & Inputs
 Input/
 Output/
-# Heavy Weights and Machine Learning Models
-Models/
+
+# Project
+Src/signature_movement/human
+Src/signature_movement/not_signature/
+Src/signature_movement/log.txt
 
 # IDEs and Editors
 .vscode/
