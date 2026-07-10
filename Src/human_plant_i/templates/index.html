@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Camera AI Monitor</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000000;
+            color: #e0e0e0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* Prevents scrollbars */
+        }
+        .navbar {
+            flex-shrink: 0; /* Keeps the navigation bar height static */
+            background-color: #1f1f1f;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            padding: 10px 0;
+            z-index: 10;
+        }
+        .nav-btn {
+            background-color: #2d2d2d;
+            color: #a0a0a0;
+            border: 2px solid #3d3d3d;
+            padding: 10px 20px;
+            margin: 0 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        .nav-btn:hover {
+            background-color: #3d3d3d;
+            color: #ffffff;
+        }
+        .nav-btn.active {
+            background-color: #00ff00;
+            color: #121212;
+            border-color: #00ff00;
+        }
+        .container {
+            flex-grow: 1; /* Takes all remaining window space below navbar */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            overflow: hidden;
+            background-color: #000000;
+        }
+        .video-wrapper {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #000000;
+        }
+        img {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain; /* Keeps frame aspect ratio without distorting */
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <button id="btn-cam1" class="nav-btn active" onclick="switchCamera('cam1')">CAMERA 01</button>
+        <button id="btn-cam2" class="nav-btn" onclick="switchCamera('cam2')">CAMERA 02</button>
+    </div>
+
+    <!-- Hidden title element so script.js doesn't crash from missing DOM elements -->
+    <h2 id="stream-title" style="display: none;"></h2>
+
+    <div class="container">
+        <div class="video-wrapper">
+            <img id="stream-display" src="" alt="Connecting to stream channel..." />
+        </div>
+    </div>
+
+    <!-- Loaded external script file -->
+    <script src="/static/script.js"></script>
+</body>
+</html>
