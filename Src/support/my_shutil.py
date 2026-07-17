@@ -1,9 +1,10 @@
 import os
 import shutil
-from my_logger import Logger, LogLevel
-from smbclient import listdir, open_file, register_session, reset_connection_cache
-import smbclient
+
+from smbclient import listdir, open_file, register_session, reset_connection_cache, rename
 from dotenv import load_dotenv
+
+from my_logger import Logger, LogLevel
 
 # Load environmental variables for credentials
 load_dotenv()
@@ -13,11 +14,13 @@ class ShellUtil:
         """
         Initialize the ShellUtil instance with logging and state control.
         """
+        # --- State ---
         self.logger = Logger("Shell utils", log_level)
         self.root_folder = None
         self.is_network = False
         self.ip = None
 
+    # --- Path helpers ---
     def _parse_unc_path(self, unc_path: str) -> str:
         """
         Extract the host or IP address from a network UNC path.
@@ -47,13 +50,13 @@ class ShellUtil:
             
             # Authenticate session using smbclient
             register_session(self.ip, username=user_name, password=pass_word)
-            self.logger.log_debug(f"Network path detected. Session registered for IP: {self.ip}")
+            self.logger.log_info(f"Network path detected. Session registered for IP: {self.ip}")
         else:
             self.is_network = False
             if not os.path.isdir(root_folder):
                 self.logger.log_error(f"Path is not a valid directory: {root_folder}")
                 raise ValueError("Path is not a directory")
-            self.logger.log_debug(f"Local path detected: {root_folder}")
+            self.logger.log_info(f"Local path detected: {root_folder}")
 
     def _get_absolute_path(self, relative_path: str) -> str:
         """
@@ -63,6 +66,7 @@ class ShellUtil:
             raise ValueError("Root folder is not set. Call set_root_folder first.")
         return os.path.join(self.root_folder, relative_path) if relative_path else self.root_folder
 
+    # --- Read operations ---
     def list_directory(self, relative_path: str = "") -> list:
         """
         List all contents of a specific directory path relative to the root folder.
@@ -108,6 +112,7 @@ class ShellUtil:
             self.logger.log_debug(f"Successfully read from local path: {target_path}")
             return content
 
+    # --- Write operations ---
     def write_file(self, relative_path: str, message: str, mode: str = "a"):
         """
         Write or append data to a file located relative to the root folder.
@@ -137,11 +142,12 @@ class ShellUtil:
         dst_path = self._get_absolute_path(dst_relative)
         
         if self.is_network:
-            smbclient.rename(src_path, dst_path)
+            rename(src_path, dst_path)
         else:
             shutil.move(src_path, dst_path)
         self.logger.log_debug(f"Moved file from {src_path} -> {dst_path}")
 
+    # --- Lifecycle ---
     def stop(self):
         """
         Clear connection cache and unregister network session if applicable.
